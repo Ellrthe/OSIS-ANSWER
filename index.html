@@ -4,6 +4,99 @@
 <meta charset="UTF-8">
 <title>Ответы на экзаменационные вопросы — Операционные системы</title>
 <style>
+  .nav-menu { 
+    background: #fff; 
+    border: 1px solid #d8dff0; 
+    border-radius: 8px; 
+    padding: 24px; 
+    margin-bottom: 30px; 
+    box-shadow: 0 4px 12px rgba(15, 52, 96, 0.05); 
+  }
+  .nav-menu h3 { 
+    margin-top: 0; 
+    margin-bottom: 16px;
+    color: #0f3460; 
+    border-bottom: 2px solid #e8edf8; 
+    padding-bottom: 8px; 
+    font-size: 1.3em;
+  }
+  .nav-list { 
+    display: grid; 
+    /* Меню будет автоматически разбиваться на колонки в зависимости от ширины экрана */
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); 
+    gap: 10px 15px; 
+    list-style: none; 
+    padding: 0; 
+    margin: 0; 
+  }
+  .nav-list li { 
+    margin: 0; 
+    font-size: 0.9em; 
+    line-height: 1.4; 
+  }
+  .nav-list a { 
+    color: #0f3460; 
+    text-decoration: none; 
+    display: flex; 
+    align-items: flex-start; 
+    transition: color 0.2s ease;
+  }
+  .nav-list a:hover { 
+    color: #7c4dff; 
+    text-decoration: underline; 
+  }
+  .nav-list .nav-qnum { 
+    background: #0f3460; 
+    color: #fff; 
+    font-size: 0.8em; 
+    font-weight: 700; 
+    border-radius: 4px; 
+    padding: 1px 5px; 
+    margin-right: 8px; 
+    min-width: 20px; 
+    text-align: center; 
+    flex-shrink: 0; 
+    transition: background-color 0.2s ease;
+  }
+  .nav-list a:hover .nav-qnum { 
+    background: #7c4dff; 
+  }
+
+  /* Стили для плавающей кнопки "Наверх" */
+  .back-to-top { 
+    position: fixed; 
+    bottom: 30px; 
+    right: 30px; 
+    background: #0f3460; 
+    color: #fff; 
+    border: none; 
+    border-radius: 50%; 
+    width: 50px; 
+    height: 50px; 
+    font-size: 24px; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
+    transition: all 0.3s ease; 
+    opacity: 0; 
+    visibility: hidden; 
+    z-index: 1000; 
+  }
+  .back-to-top.show { 
+    opacity: 1; 
+    visibility: visible; 
+  }
+  .back-to-top:hover { 
+    background: #7c4dff; 
+    transform: translateY(-3px); 
+  }
+  
+  /* Плавный скролл для всей страницы */
+  html {
+    scroll-behavior: smooth;
+  }
   body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 15px; line-height: 1.8; color: #1a1a2e; margin: 0; padding: 0; background: #f4f6fb; }
   .container { max-width: 980px; margin: 0 auto; padding: 30px 20px 60px; }
   h1 { font-size: 2em; color: #16213e; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
@@ -1059,5 +1152,87 @@ t=7: P2 завершился. Запускаем P4(4): 7→11. Затем P1(о
 </div>
 
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const container = document.querySelector('.container');
+  const subtitle = document.querySelector('.subtitle');
+  const headings = document.querySelectorAll('h2');
+  
+  if (headings.length === 0) return;
+
+  // 1. Создаем блок навигационного меню
+  const navMenu = document.createElement('div');
+  navMenu.className = 'nav-menu';
+  navMenu.id = 'top-nav'; // ID для возврата к меню
+  
+  const navTitle = document.createElement('h3');
+  navTitle.textContent = 'Навигация по вопросам';
+  navMenu.appendChild(navTitle);
+  
+  const navList = document.createElement('ul');
+  navList.className = 'nav-list';
+  
+  // Проходим по всем вопросам и формируем ссылки
+  headings.forEach((h2, index) => {
+    const id = 'question-' + (index + 1);
+    h2.id = id; // Назначаем уникальный якорь для каждого вопроса
+    
+    const qnumSpan = h2.querySelector('.qnum');
+    const qnumText = qnumSpan ? qnumSpan.textContent : (index + 1);
+    
+    // Получаем чистый текст вопроса без номера во внутреннем теге
+    let clone = h2.cloneNode(true);
+    const badge = clone.querySelector('.qnum');
+    if (badge) badge.remove();
+    const headingText = clone.textContent.trim();
+    
+    // Строим структуру элементов списка
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = '#' + id;
+    
+    const numBadge = document.createElement('span');
+    numBadge.className = 'nav-qnum';
+    numBadge.textContent = qnumText;
+    
+    const textNode = document.createTextNode(headingText);
+    
+    a.appendChild(numBadge);
+    a.appendChild(textNode);
+    li.appendChild(a);
+    navList.appendChild(li);
+  });
+  
+  navMenu.appendChild(navList);
+  
+  // Вставляем готовое меню сразу после подзаголовка дисциплины
+  if (subtitle) {
+    subtitle.parentNode.insertBefore(navMenu, subtitle.nextSibling);
+  } else if (container) {
+    container.insertBefore(navMenu, container.firstChild);
+  }
+  
+  // 2. Создаем плавающую кнопку "Наверх"
+  const topBtn = document.createElement('button');
+  topBtn.className = 'back-to-top';
+  topBtn.innerHTML = '↑';
+  topBtn.title = 'Вернуться к меню навигации';
+  document.body.appendChild(topBtn);
+  
+  // Логика появления кнопки при прокрутке вниз
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 400) {
+      topBtn.classList.add('show');
+    } else {
+      topBtn.classList.remove('show');
+    }
+  });
+  
+  // Плавный возврат к меню при клике на кнопку
+  topBtn.addEventListener('click', function() {
+    document.getElementById('top-nav').scrollIntoView({ behavior: 'smooth' });
+  });
+});
+</script>
 </body>
 </html>
